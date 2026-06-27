@@ -17,3 +17,56 @@ sql:
               type: "UUID"
           - db_type: "timestamptz"
             go_type: "time.Time"
+  - engine: "postgresql"
+    queries: "queries/rules"
+    schema: "migrations"
+    gen:
+      go:
+        package: "ruledb"
+        out: "../internal/rules/adapter/postgres/ruledb"
+        sql_package: "pgx/v5"
+        emit_json_tags: true
+        emit_empty_slices: true
+        overrides:
+          - db_type: "uuid"
+            go_type:
+              import: "github.com/google/uuid"
+              type: "UUID"
+          - db_type: "timestamptz"
+            go_type: "time.Time"
+          - db_type: "numeric"
+            go_type: "float64"
+  - engine: "postgresql"
+    queries: "queries/violation"
+    schema: "migrations"
+    gen:
+      go:
+        package: "violationdb"
+        out: "../internal/violation/adapter/postgres/violationdb"
+        sql_package: "pgx/v5"
+        emit_json_tags: true
+        emit_empty_slices: true
+        overrides:
+          - db_type: "uuid"
+            go_type:
+              import: "github.com/google/uuid"
+              type: "UUID"
+          - db_type: "timestamptz"
+            go_type: "time.Time"
+  - engine: "postgresql"
+    queries: "queries/payment"
+    schema: "migrations"
+    gen:
+      go:
+        package: "paymentdb"
+        out: "../internal/payment/adapter/postgres/paymentdb"
+        sql_package: "pgx/v5"
+        emit_json_tags: true
+        emit_empty_slices: true
+        overrides:
+          - db_type: "uuid"
+            go_type:
+              import: "github.com/google/uuid"
+              type: "UUID"
+          - db_type: "timestamptz"
+            go_type: "time.Time"

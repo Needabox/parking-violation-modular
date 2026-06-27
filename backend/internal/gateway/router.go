@@ -7,17 +7,23 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5/pgxpool"
 	authhandler "github.com/parking-violation-portal/backend/internal/auth/adapter/handler"
+	rulehandler "github.com/parking-violation-portal/backend/internal/rules/adapter/handler"
+	violationhandler "github.com/parking-violation-portal/backend/internal/violation/adapter/handler"
+	paymenthandler "github.com/parking-violation-portal/backend/internal/payment/adapter/handler"
 	"github.com/parking-violation-portal/backend/internal/gateway/middleware"
 	jwtutil "github.com/parking-violation-portal/backend/pkg/jwt"
 	pkgdb "github.com/parking-violation-portal/backend/pkg/db"
 )
 
 type Dependencies struct {
-	AuthHandler    *authhandler.AuthHandler
-	VehicleHandler *authhandler.VehicleHandler
-	JWTManager     *jwtutil.Manager
-	AllowedOrigins []string
-	DBPool         *pgxpool.Pool
+	AuthHandler      *authhandler.AuthHandler
+	VehicleHandler   *authhandler.VehicleHandler
+	RuleHandler      *rulehandler.RuleHandler
+	ViolationHandler *violationhandler.ViolationHandler
+	PaymentHandler   *paymenthandler.PaymentHandler
+	JWTManager       *jwtutil.Manager
+	AllowedOrigins   []string
+	DBPool           *pgxpool.Pool
 }
 
 func NewRouter(deps Dependencies) *gin.Engine {
@@ -61,6 +67,30 @@ func NewRouter(deps Dependencies) *gin.Engine {
 			vehicles.POST("", deps.VehicleHandler.Create)
 			vehicles.GET("", deps.VehicleHandler.List)
 			vehicles.DELETE("/:id", deps.VehicleHandler.Delete)
+		}
+
+		rules := api.Group("/rules")
+		rules.Use(middleware.Auth(deps.JWTManager))
+		{
+			rules.POST("", deps.RuleHandler.Create)
+			rules.PUT("/:code", deps.RuleHandler.Update)
+			rules.GET("", deps.RuleHandler.ListActive)
+			rules.GET("/:code", deps.RuleHandler.GetActive)
+			rules.GET("/:code/versions", deps.RuleHandler.ListVersions)
+		}
+
+		violations := api.Group("/violations")
+		violations.Use(middleware.Auth(deps.JWTManager))
+		{
+			violations.POST("", deps.ViolationHandler.Report)
+			violations.GET("", deps.ViolationHandler.List)
+			violations.GET("/:id", deps.ViolationHandler.Get)
+		}
+
+		payments := api.Group("/payments")
+		payments.Use(middleware.Auth(deps.JWTManager))
+		{
+			payments.POST("", deps.PaymentHandler.Pay)
 		}
 	}
 
